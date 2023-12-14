@@ -1,89 +1,76 @@
-# Clustering Analysis using R
+# Logistic Regression Analysis for Diabetes Dataset
 
-This script performs clustering analysis on online sports wagering data using Euclidean and Manhattan distances.
+## Load Required Libraries
+```R
+library(ggplot2)      # For data visualization
+library(corrplot)     # For correlation matrix visualization
+library(caret)        # For data partitioning and model evaluation
+library(readr)        # For reading CSV files
+```
 
-Data source from: https://www.kaggle.com/datasets/mattop/online-sport-wagering-data-2021-2023
+## Input Data
+```R
+data <- read_csv("C:/Users/Binta/OneDrive/Documents/CV Publikasi/Logistic Regression/Dataset of Diabetes .csv")
+```
+- Reads the diabetes dataset from a CSV file.
 
-## Installation and Prerequisites
+## Data Exploration
+```R
+str(data)   # Display structure of the dataset
+tail(data)  # Display the last few rows of the dataset
+```
+- Provides information about the dataset structure and displays the last few rows.
 
-To run this script, make sure you have installed the following R packages:
+## Feature Engineering
+```R
+data$Gender_No <- ifelse(data$Gender == "M", 0, 1)   # Creates a binary variable 'Gender_No'
+data$Class_No <- ifelse(data$CLASS == "N", 0, ifelse(data$CLASS == "Y", 1, 0.5))   # Creates a binary variable 'Class_No'
+names(data)   # Displays column names
+data <- subset(data, select = -c(Gender, CLASS))   # Removes 'Gender' and 'CLASS' columns
+head(data)   # Display the modified dataset
+str(data)    # Display updated structure of the dataset
 ```
-# Loading Required Libraries
-library(dendextend)
-library(readr)
-```
-Importing necessary libraries, including dendextend for dendrogram manipulation and readr for reading data.
-```
-# Input Data
-data1 <- read_csv("C:/Users/Binta/OneDrive/Documents/CV Publikasi/Clustering/Selected_Online_Sport_Wagering_Data.csv")
-data <- data.frame(data1[, 4:14])
-```
-Reading the CSV file and creating a data frame (data) containing columns from the 4th to the 14th.
-```
-# EUCLID
-# Calculating Euclidean Distance Matrix
-euclidean_distance <- dist(data, method = "euclidean")
-```
-Calculating the Euclidean distance matrix using the dist function.
-```
-# Creating a Dendrogram
-dend_euclidean <- hclust(euclidean_distance, method = "single")
-dend1_euclidean <- hclust(euclidean_distance, method = "average")
-dend2_euclidean <- hclust(euclidean_distance, method = "complete")
-dend3_euclidean <- hclust(euclidean_distance, method = "ward.D2")
-```
-Building dendrograms using hierarchical clustering (hclust) with different linkage methods: single, average, complete, and ward.D2.
-```
-# Show Dendrogram
-plot(dend_euclidean, main = "Dendrogram Euclidean")
-plot(dend1_euclidean, main = "Dendrogram Euclidean")
-plot(dend2_euclidean, main = "Dendrogram Euclidean")
-plot(dend3_euclidean, main = "Dendrogram Euclidean")
-```
-Displaying dendrograms for each linkage method using the plot function.
+- Generates new binary variables 'Gender_No' and 'Class_No' based on existing columns.
+- Removes unnecessary columns ('Gender' and 'CLASS').
 
-### Plot Euclidean Single Linkage
-![image](https://github.com/itsbintg/Cluster-Data-Analysis/assets/140331853/a7cc419e-4f36-47fb-8fba-59f089c757a9)
-
-### Plot Euclidean Average Linkage
-![image](https://github.com/itsbintg/Cluster-Data-Analysis/assets/140331853/09b347f5-e124-4ec1-a9bb-f036ad1dbe7a)
-
-### Plot Euclidean Complete Linkage
-![image](https://github.com/itsbintg/Cluster-Data-Analysis/assets/140331853/e131c394-4eca-4f3e-bf6a-c321e6ee2d8d)
-
-### Plot Euclidean Ward's Method
-![image](https://github.com/itsbintg/Cluster-Data-Analysis/assets/140331853/312d4144-571d-4b54-8d19-409d4f2600b4)
-
+## Correlation Analysis
+```R
+correlation_matrix <- cor(data[, c('AGE', 'Urea', 'Cr', 'HbA1c', 'Chol', 'TG', 'HDL', 'LDL', 'VLDL', 'BMI', 'Class_No', 'Gender_No')])
+corrplot(correlation_matrix, method = 'color', type = 'upper', order = 'hclust', tl.col = 'black')   # Displays a correlation heatmap
 ```
-# MANHATTAN
-# Calculating Manhattan Distance Matrix
-manhattan_distance <- dist(data, method = "manhattan")
-```
-Calculating the Manhattan distance matrix using the dist function.
-```
-# Creating a Dendrogram
-dend_manhattan <- hclust(manhattan_distance, method = "single")
-dend1_manhattan <- hclust(manhattan_distance, method = "average")
-dend2_manhattan <- hclust(manhattan_distance, method = "complete")
-dend3_manhattan <- hclust(manhattan_distance, method = "ward.D2")
-```
-Building dendrograms using hierarchical clustering (hclust) with different linkage methods: single, average, complete, and ward.D2.
-```
-# Show Dendrogram
-plot(dend_manhattan)
-plot(dend1_manhattan)
-plot(dend2_manhattan)
-plot(dend3_manhattan)
-```
-Displaying dendrograms for each linkage method using the plot function.
-### Plot Manhattan Single Linkage
-![image](https://github.com/itsbintg/Cluster-Data-Analysis/assets/140331853/d4b55a19-cfcd-469e-af46-f8397fecfc86)
+- Computes the correlation matrix for selected variables.
+- Visualizes the correlation matrix using a heatmap.
 
-### Plot Manhattan Average Linkage
-![image](https://github.com/itsbintg/Cluster-Data-Analysis/assets/140331853/40bf3601-5885-4c9f-9258-d9a346b93fff)
+## Data Splitting
+```R
+x <- data[, 3:9]   # Independent variables (features)
+y <- data$Class_No   # Dependent variable
+set.seed(0)
+split <- createDataPartition(y, p = 0.8, list = FALSE)   # Splits the dataset into training and test sets
+train_data <- data[split, ]
+test_data <- data[-split, ]
+```
+- Divides the dataset into independent variables (`x`) and the dependent variable (`y`).
+- Splits the dataset into training and test sets using 80-20 partition.
 
-### Plot Manhattan Complete Linkage
-![image](https://github.com/itsbintg/Cluster-Data-Analysis/assets/140331853/4e84e5ad-d2f9-43d4-bcee-78a818be1cc8)
+## Logistic Regression Modeling
+```R
+logreg <- glm(Class_No ~ AGE + Urea + Cr + HbA1c + Chol + TG + HDL + LDL + VLDL + BMI, data = train_data, family = binomial)   # Fits the logistic regression model
+```
 
-### Plot Manhattan Ward's Method
-![image](https://github.com/itsbintg/Cluster-Data-Analysis/assets/140331853/fc03279c-d185-4156-8423-61551cc6465b)
+## Model Evaluation
+```R
+y_pred <- predict(logreg, newdata = test_data, type = 'response')   # Predicts the test set results
+y_tpred <- ifelse(y_pred > 0.5, 1, 0)   # Converts probabilities to binary predictions
+conf_matrix <- confusionMatrix(data = as.factor(y_tpred), reference = as.factor(test_data$Class_No))   # Evaluates the model using a confusion matrix
+conf_matrix   # Displays the confusion matrix
+```
+- Uses logistic regression to model the relationship between variables and diabetes classification.
+- Evaluates the model's performance using a confusion matrix.
+
+## Visualization
+```R
+plot(data$AGE, y, col = ifelse(y == 1, "red", "blue"), pch = 19)   # Plots the logistic regression line
+abline(h = 0.5, col = "green", lty = 2)   # Adds a threshold line to the plot
+```
+- Visualizes the logistic regression line on a scatter plot of age and diabetes classification.
