@@ -73,4 +73,6 @@ conf_matrix   # Displays the confusion matrix
 plot(data$AGE, y, col = ifelse(y == 1, "red", "blue"), pch = 19)   # Plots the logistic regression line
 abline(h = 0.5, col = "green", lty = 2)   # Adds a threshold line to the plot
 ```
+![image](https://github.com/itsbintg/Logistic-Regression/assets/140331853/e36b871c-8d81-477e-b892-abd2dffbfae3)
+
 - Visualizes the logistic regression line on a scatter plot of age and diabetes classification.
